@@ -1,15 +1,29 @@
 import styled from "styled-components";
 import TodoList from "./TodoList";
 import TodoCreate from "./TodoCreate";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import API from "../config";
 
+const token = localStorage.getItem("access_token");
 const Todo = () => {
+  useEffect(() => {
+    axios
+      .get(API.CreateTodo, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => setTodo(res.data));
+  }, []);
+  const [todo, setTodo] = useState([]);
   return (
     <>
       <Container>
         <TodoBox>
           <TodoTitle>무엇을 해볼까?</TodoTitle>
-          <TodoList />
-          <TodoCreate />
+          <TodoList todo={todo} setTodo={setTodo} />
+          <TodoCreate setTodo={setTodo} />
         </TodoBox>
       </Container>
     </>

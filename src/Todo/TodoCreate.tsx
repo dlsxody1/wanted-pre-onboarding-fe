@@ -3,37 +3,52 @@ import { useState } from "react";
 import axios from "axios";
 import API from "../config";
 
-const TodoCreate = () => {
+interface TodoProps {
+  setTodo: React.Dispatch<React.SetStateAction<never[]>>;
+}
+
+const TodoCreate = ({ setTodo }: TodoProps) => {
   const [open, setOpen] = useState(false);
+  const [todoValue, setTodoValue] = useState("");
   const onToggle = () => {
     setOpen(!open);
   };
 
-  const onSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      axios
-        .post(
-          API.CreateTodo,
-          {
-            todo: "",
-          },
-          {
-            headers: {
-              Authorization: "Bearer access_token",
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then((res) => console.log(res));
-    } catch (err) {
-      console.log(err);
-    }
+    await axios.post(
+      API.CreateTodo,
+      {
+        todo: todoValue,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    setTodoValue("");
+    axios
+      .get(API.CreateTodo, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => setTodo(res.data));
   };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const todo = e.target.value;
+    setTodoValue(todo);
+  };
+
+  const token = localStorage.getItem("access_token");
+
   return (
     <>
       <Container onSubmit={onSubmit}>
-        {open ? <CreateInput /> : ""}
+        {open ? <CreateInput onChange={onChange} /> : ""}
         <CreateButton onClick={onToggle}>+</CreateButton>
       </Container>
     </>
